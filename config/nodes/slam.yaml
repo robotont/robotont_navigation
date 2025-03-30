@@ -1,0 +1,35 @@
+slam_toolbox:
+  ros__parameters:
+    publish_map: true
+    publish_transform: true
+
+    resolution: 0.05
+    publish_period_sec: 1.0
+
+    use_scan_matching: true
+    use_multithreaded_scan_matcher: true
+    enable_interactive_mode: false
+
+    mode: "mapping"
+    minimum_time_interval: 0.5
+    transform_publish_period: 0.05
+    map_update_interval: 5.0
+
+    use_pose_topic: true
+    output_final_map: true
+    throttle_scans: 1
+
+    minimum_score: 0.55
+    max_laser_range: 20.0
+    loop_match_min_chain_size: 10
+    loop_match_max_distance: 3.0
+    loop_match_min_score: 0.55
+    loop_search_max_radius: 10.0
+    loop_search_max_submaps: 10
+
+    solver_plugin: "solver_plugins::CeresSolver"
+    ceres_linear_solver: "SPARSE_NORMAL_CHOLESKY"
+    ceres_preconditioner: "SCHUR_JACOBI"
+    ceres_trust_strategy: "LEVENBERG_MARQUARDT"
+    ceres_dogleg_type: "TRADITIONAL_DOGLEG"
+    ceres_max_num_iterations: 200
