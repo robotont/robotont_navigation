@@ -1,8 +1,0 @@
-depthimage_to_laserscan:
-  ros__parameters:
-    output_frame: "base_footprint"
-    output_frame_id: "camera_depth_frame"
-    range_min: 0.1
-    range_max: 15.0
-    scan_time: 0.033
-    scan_height: 1
