@@ -47,30 +47,7 @@ source ~/<YOUR_WORKSPACE_NAME_HERE>/install/setup.bash
 ```
 ## 2. Available Launch Files
 
-### 2.1. `gamepad_navigation.launch.py`
-Launches joystick teleoperation (e.g., for controlling the robot with a gamepad).
-
-### Supported Parameters
-
-| Name           | Description                                                      | Options/Default                                                                                                       |
-|----------------|------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| `use_sim_time` | Use simulation time (Gazebo/Sim)                                 | `true` (default), `false`                                                                                            |
-| `params_file`  | Path to parameter YAML file for navigation nodes                 | `nav2_params.yaml` (default)                                                                                         |
-| `gamepad_conf` | Gamepad configuration YAML (for teleop)                          | `dualsense.yaml` (default)                                                                                           |
-
----
-
-**Example: Launch with Dualsense (default) gamepad configuration**
-```bash
-ros2 launch robotont_navigation gamepad_navigation.launch.py
-```
-
-**Example: Launch with custom gamepad configuration**
-```bash
-ros2 launch robotont_navigation gamepad_navigation.launch.py gamepad_conf:=path_to_your_conf_file.yaml
-```
-
-### 2.2. `nav2_bringup.launch.py`
+### 2.1. `nav2_bringup.launch.py`
 Launches the core navigation stack nodes with configurable parameters.
 
 **Supported Parameters**
