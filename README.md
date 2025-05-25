@@ -26,7 +26,7 @@ git clone https://github.com/robotont/robotont_navigation.git
 1.1. nav2_bt_navigator<br>
 1.2. nav2_controller<br>
 1.3. nav2_planner<br>
-1.4. nav2_behaviors
+1.4. nav2_behaviors<br>
 1.5. nav2_lifecycle_manager
 ### **2. Install dependencies**
 ```bash
