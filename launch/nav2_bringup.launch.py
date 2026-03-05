@@ -4,6 +4,7 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.parameter_descriptions import ParameterFile
 
 
 def generate_launch_description():
@@ -11,9 +12,9 @@ def generate_launch_description():
     # ---------------------------------------------------------------------------
     # Arguments
     # ---------------------------------------------------------------------------
-    namespace_arg      = DeclareLaunchArgument('namespace',     default_value='')
-    use_sim_time_arg   = DeclareLaunchArgument('use_sim_time',  default_value='false')
-    params_file_arg    = DeclareLaunchArgument(
+    namespace_arg    = DeclareLaunchArgument('namespace',    default_value='')
+    use_sim_time_arg = DeclareLaunchArgument('use_sim_time', default_value='false')
+    params_file_arg  = DeclareLaunchArgument(
         'params_file',
         default_value=PathJoinSubstitution([
             FindPackageShare('robotont_navigation'), 'config', 'nav', 'nav2_gen3_lite.yaml'
@@ -23,12 +24,16 @@ def generate_launch_description():
     # ---------------------------------------------------------------------------
     # Substitutions
     # ---------------------------------------------------------------------------
-    namespace     = LaunchConfiguration('namespace')
-    use_sim_time  = LaunchConfiguration('use_sim_time')
-    params_file   = LaunchConfiguration('params_file')
+    namespace    = LaunchConfiguration('namespace')
+    use_sim_time = LaunchConfiguration('use_sim_time')
 
-    # Shared parameters passed to every nav2 node
-    nav2_params = [params_file, {'use_sim_time': use_sim_time}]
+    # ParameterFile with allow_substs=True enables $(var xyz) in the yaml
+    params = ParameterFile(
+        param_file=LaunchConfiguration('params_file'),
+        allow_substs=True
+    )
+
+    nav2_params = [params, {'use_sim_time': use_sim_time}]
 
     # ---------------------------------------------------------------------------
     # Nodes

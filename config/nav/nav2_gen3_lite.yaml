@@ -2,15 +2,14 @@
   bt_navigator:
     ros__parameters:
       global_frame: map
-      robot_base_frame: base_footprint
-      odom_topic: /odom
+      robot_base_frame: $(var namespace)/base_footprint
+      odom_topic: odom
       default_bt_xml_filename: "navigate_w_replanning_and_recovery.xml"
       bt_loop_duration: 10
       default_server_timeout: 50
       enable_groot_monitoring: true
       groot_zmq_publisher_port: 1666
       groot_zmq_server_port: 1667
-
 
   controller_server:
     ros__parameters:
@@ -39,18 +38,18 @@
         debug_trajectory_details: true
         min_vel_x: 0.0
         min_vel_y: 0.0
-        max_vel_x: 1.0
-        max_vel_y: 1.0
-        max_vel_theta: 2.0
+        max_vel_x: 0.5
+        max_vel_y: 0.0
+        max_vel_theta: 1.0
         min_speed_xy: 0.0
-        max_speed_xy: 1.0
+        max_speed_xy: 0.5
         min_speed_theta: 0.0
-        acc_lim_x: 2.5
-        acc_lim_y: 2.5
-        acc_lim_theta: 3.2
-        decel_lim_x: -2.5
-        decel_lim_y: -2.5
-        decel_lim_theta: -3.2
+        acc_lim_x: 1.5
+        acc_lim_y: 0.0
+        acc_lim_theta: 2.0
+        decel_lim_x: -1.5
+        decel_lim_y: 0.0
+        decel_lim_theta: -2.0
         vx_samples: 20
         vy_samples: 0
         vtheta_samples: 40
@@ -79,8 +78,8 @@
       ros__parameters:
         update_frequency: 5.0
         publish_frequency: 2.0
-        global_frame: odom
-        robot_base_frame: base_footprint
+        global_frame: $(var namespace)/odom
+        robot_base_frame: $(var namespace)/base_footprint
         rolling_window: true
         width: 3
         height: 3
@@ -96,7 +95,7 @@
           enabled: true
           observation_sources: scan
           scan:
-            topic: /scan
+            topic: scan
             max_obstacle_height: 2.0
             clearing: true
             marking: true
@@ -109,8 +108,8 @@
         update_frequency: 1.0
         publish_frequency: 1.0
         global_frame: map
-        robot_base_frame: base_link
-        robot_radius: 0.15
+        robot_base_frame: $(var namespace)/base_footprint
+        robot_radius: 0.22
         resolution: 0.05
         rolling_window: true
         track_unknown_space: true
@@ -120,7 +119,7 @@
           enabled: true
           observation_sources: scan
           scan:
-            topic: /scan
+            topic: scan
             clearing: true
             marking: true
             data_type: "LaserScan"
@@ -128,8 +127,6 @@
             raytrace_min_range: 0.0
             obstacle_max_range: 1.1
             obstacle_min_range: 0.0
-            obstacle_range: 1.1
-            raytrace_range: 2.0
         inflation_layer:
           plugin: "nav2_costmap_2d::InflationLayer"
           cost_scaling_factor: 3.0
@@ -158,8 +155,8 @@
         plugin: "nav2_behaviors::BackUp"
       wait:
         plugin: "nav2_behaviors::Wait"
-      global_frame: odom
-      robot_base_frame: base_footprint
+      global_frame: $(var namespace)/odom
+      robot_base_frame: $(var namespace)/base_footprint
       transform_timeout: 0.1
       simulate_ahead_time: 2.0
       max_rotational_vel: 1.0
