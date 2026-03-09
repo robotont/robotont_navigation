@@ -1,7 +1,7 @@
 /**:
   bt_navigator:
     ros__parameters:
-      global_frame: map
+      global_frame: $(var namespace)/map
       robot_base_frame: $(var namespace)/base_footprint
       odom_topic: odom
       default_bt_xml_filename: "navigate_w_replanning_and_recovery.xml"
@@ -95,7 +95,7 @@
           enabled: true
           observation_sources: scan
           scan:
-            topic: scan
+            topic: $(var namespace)/scan
             max_obstacle_height: 2.0
             clearing: true
             marking: true
@@ -107,19 +107,23 @@
       ros__parameters:
         update_frequency: 1.0
         publish_frequency: 1.0
-        global_frame: map
+        global_frame: $(var namespace)/map
         robot_base_frame: $(var namespace)/base_footprint
         robot_radius: 0.22
         resolution: 0.05
-        rolling_window: true
+        rolling_window: false
         track_unknown_space: true
-        plugins: ["obstacle_layer", "inflation_layer"]
+        plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+        static_layer:
+          plugin: "nav2_costmap_2d::StaticLayer"
+          map_subscribe_transient_local: true
+          map_topic: /$(var namespace)/map
         obstacle_layer:
           plugin: "nav2_costmap_2d::ObstacleLayer"
           enabled: true
           observation_sources: scan
           scan:
-            topic: scan
+            topic: $(var namespace)/scan
             clearing: true
             marking: true
             data_type: "LaserScan"
