@@ -3,7 +3,7 @@
     ros__parameters:
       global_frame: $(var namespace)/map
       robot_base_frame: $(var namespace)/base_footprint
-      odom_topic: odom
+      odom_topic: /$(var namespace)/odom
       default_bt_xml_filename: "navigate_w_replanning_and_recovery.xml"
       bt_loop_duration: 10
       default_server_timeout: 50
@@ -15,163 +15,243 @@
     ros__parameters:
       controller_frequency: 10.0
       min_x_velocity_threshold: 0.001
-      min_y_velocity_threshold: 0.5
+      min_y_velocity_threshold: 0.001
       min_theta_velocity_threshold: 0.001
       failure_tolerance: 0.3
+
       progress_checker_plugin: "progress_checker"
       goal_checker_plugins: ["general_goal_checker"]
       controller_plugins: ["FollowPath"]
 
       progress_checker:
         plugin: "nav2_controller::SimpleProgressChecker"
-        required_movement_radius: 0.5
+        required_movement_radius: 0.3
         movement_time_allowance: 10.0
 
       general_goal_checker:
         stateful: true
         plugin: "nav2_controller::SimpleGoalChecker"
-        xy_goal_tolerance: 0.25
-        yaw_goal_tolerance: 0.25
+        xy_goal_tolerance: 0.2
+        yaw_goal_tolerance: 0.35
 
       FollowPath:
         plugin: "dwb_core::DWBLocalPlanner"
-        debug_trajectory_details: true
-        min_vel_x: 0.0
-        min_vel_y: 0.0
-        max_vel_x: 0.5
-        max_vel_y: 0.0
-        max_vel_theta: 1.0
+        debug_trajectory_details: false
+
+        min_vel_x: -0.6
+        max_vel_x: 0.6
+        min_vel_y: -0.6
+        max_vel_y: 0.6
+
+        max_vel_theta: 1.5
         min_speed_xy: 0.0
-        max_speed_xy: 0.5
+        max_speed_xy: 0.7
         min_speed_theta: 0.0
-        acc_lim_x: 1.5
-        acc_lim_y: 0.0
-        acc_lim_theta: 2.0
-        decel_lim_x: -1.5
-        decel_lim_y: 0.0
-        decel_lim_theta: -2.0
+
+        acc_lim_x: 2.0
+        acc_lim_y: 2.0
+        acc_lim_theta: 3.0
+
+        decel_lim_x: -2.0
+        decel_lim_y: -2.0
+        decel_lim_theta: -3.0
+
         vx_samples: 20
-        vy_samples: 0
-        vtheta_samples: 40
-        sim_time: 2.0
+        vy_samples: 20
+        vtheta_samples: 20
+
+        sim_time: 1.5                  # was 0.8 — longer lookahead anticipates corners
         linear_granularity: 0.05
         angular_granularity: 0.025
-        transform_tolerance: 0.2
-        xy_goal_tolerance: 0.1
-        trans_stopped_velocity: 0.25
+        transform_tolerance: 0.3
+
+        xy_goal_tolerance: 0.2
+        trans_stopped_velocity: 0.05
+
         short_circuit_trajectory_evaluation: true
         stateful: true
-        critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
-        BaseObstacle.scale: 0.02
-        PathAlign.scale: 32.0
-        PathAlign.forward_point_distance: 0.1
-        GoalAlign.scale: 24.0
-        GoalAlign.forward_point_distance: 0.1
-        PathDist.scale: 32.0
-        GoalDist.scale: 24.0
-        RotateToGoal.scale: 32.0
-        RotateToGoal.slowing_factor: 5.0
+
+        critics: [
+          "RotateToGoal",
+          "Oscillation",
+          "BaseObstacle",
+          "PathAlign",
+          "PathDist",
+          "GoalDist",
+          "Twirling"
+        ]
+
+        BaseObstacle.scale: 0.6
+
+        PathAlign.scale: 32.0                  # was 12.0 — stronger heading alignment
+        PathAlign.forward_point_distance: 0.4  # was 0.6 — tighter alignment check
+
+        PathDist.scale: 32.0                   # was 40.0 — less obsessive path-hugging
+
+        GoalAlign.scale: 0.0
+        GoalAlign.forward_point_distance: 0.2
+
+        GoalDist.scale: 24.0                   # was 60.0 — less aggressive goal-pulling
+
+        RotateToGoal.scale: 2.0                # was 1.5
+        RotateToGoal.slowing_factor: 3.0
         RotateToGoal.lookahead_time: -1.0
+
+        Twirling.scale: 5.0                    # was 10.0
+
 
   local_costmap:
     local_costmap:
       ros__parameters:
-        update_frequency: 5.0
-        publish_frequency: 2.0
+
+        update_frequency: 8.0
+        publish_frequency: 4.0
+
         global_frame: $(var namespace)/odom
         robot_base_frame: $(var namespace)/base_footprint
+
         rolling_window: true
         width: 3
         height: 3
         resolution: 0.05
-        robot_radius: 0.22
+
+        footprint: "[[0.20,0.18],[0.20,-0.18],[-0.20,-0.18],[-0.20,0.18]]"
+        footprint_padding: 0.03
+
         plugins: ["obstacle_layer", "inflation_layer"]
-        inflation_layer:
-          plugin: "nav2_costmap_2d::InflationLayer"
-          inflation_radius: 1.0
-          cost_scaling_factor: 3.0
+
         obstacle_layer:
           plugin: "nav2_costmap_2d::ObstacleLayer"
           enabled: true
+
           observation_sources: scan
+
           scan:
-            topic: $(var namespace)/scan
+            topic: /$(var namespace)/scan
             max_obstacle_height: 2.0
             clearing: true
             marking: true
             data_type: "LaserScan"
+
+            obstacle_max_range: 2.5
+            obstacle_min_range: 0.0
+
+            raytrace_max_range: 3.0
+            raytrace_min_range: 0.0
+
+        inflation_layer:
+          plugin: "nav2_costmap_2d::InflationLayer"
+
+          inflation_radius: 0.5
+          cost_scaling_factor: 5.0
+
         always_send_full_costmap: true
+
 
   global_costmap:
     global_costmap:
       ros__parameters:
-        update_frequency: 1.0
+
+        update_frequency: 2.0
         publish_frequency: 1.0
+
         global_frame: $(var namespace)/map
         robot_base_frame: $(var namespace)/base_footprint
-        robot_radius: 0.22
+
         resolution: 0.05
-        rolling_window: false
+
         track_unknown_space: true
+        rolling_window: false
+
+        robot_radius: 0.20
+
         plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+
         static_layer:
           plugin: "nav2_costmap_2d::StaticLayer"
           map_subscribe_transient_local: true
           map_topic: /$(var namespace)/map
+
         obstacle_layer:
           plugin: "nav2_costmap_2d::ObstacleLayer"
-          enabled: true
+
           observation_sources: scan
+
           scan:
-            topic: $(var namespace)/scan
+            topic: /$(var namespace)/scan
             clearing: true
             marking: true
             data_type: "LaserScan"
-            raytrace_max_range: 2.0
-            raytrace_min_range: 0.0
-            obstacle_max_range: 1.1
-            obstacle_min_range: 0.0
+
+            obstacle_max_range: 2.5
+            raytrace_max_range: 3.0
+
         inflation_layer:
           plugin: "nav2_costmap_2d::InflationLayer"
-          cost_scaling_factor: 3.0
+
           inflation_radius: 0.6
+          cost_scaling_factor: 4.0
+
         always_send_full_costmap: true
+
 
   planner_server:
     ros__parameters:
-      expected_planner_frequency: 20.0
+
+      expected_planner_frequency: 10.0
       planner_plugins: ["GridBased"]
+
       GridBased:
-        plugin: "nav2_navfn_planner::NavfnPlanner"
-        tolerance: 0.5
-        use_astar: false
+        plugin: "nav2_smac_planner::SmacPlanner2D"
+
+        tolerance: 0.10            # was 0.25 — stricter approach, less corner-cutting near goal
+        downsample_costmap: false
         allow_unknown: true
+
+        max_iterations: 1000000
+        max_on_approach_iterations: 1000
+
+        smooth_path: true
+
 
   behavior_server:
     ros__parameters:
-      local_costmap_topic: local_costmap/costmap_raw
-      local_footprint_topic: local_costmap/published_footprint
+
+      local_costmap_topic: /$(var namespace)/local_costmap/costmap_raw
+      local_footprint_topic: /$(var namespace)/local_costmap/published_footprint
+
       cycle_frequency: 10.0
+
       behavior_plugins: ["spin", "backup", "wait"]
+
       spin:
         plugin: "nav2_behaviors::Spin"
+
       backup:
         plugin: "nav2_behaviors::BackUp"
+
       wait:
         plugin: "nav2_behaviors::Wait"
+
       global_frame: $(var namespace)/odom
       robot_base_frame: $(var namespace)/base_footprint
-      transform_timeout: 0.1
+
+      transform_timeout: 0.2
       simulate_ahead_time: 2.0
-      max_rotational_vel: 1.0
+
+      max_rotational_vel: 1.5
       min_rotational_vel: 0.4
       rotational_acc_lim: 3.2
 
+
   waypoint_follower:
     ros__parameters:
+
       loop_rate: 200
       stop_on_failure: false
+
       waypoint_task_executor_plugin: "wait_at_waypoint"
+
       wait_at_waypoint:
         plugin: "nav2_waypoint_follower::WaitAtWaypoint"
         enabled: true
