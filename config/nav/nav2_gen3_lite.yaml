@@ -38,66 +38,41 @@
         plugin: "dwb_core::DWBLocalPlanner"
         debug_trajectory_details: false
 
-        min_vel_x: -0.6
-        max_vel_x: 0.6
-        min_vel_y: -0.6
-        max_vel_y: 0.6
+        acc_lim_x: 0.8
+        acc_lim_y: 0.8
+        acc_lim_theta: 1.5
 
-        max_vel_theta: 1.5
+        decel_lim_x: -0.8
+        decel_lim_y: -0.8
+        decel_lim_theta: -1.5
+
+        min_vel_x: -0.5
+        max_vel_x: 0.5
+        min_vel_y: -0.5
+        max_vel_y: 0.5
+
         min_speed_xy: 0.0
-        max_speed_xy: 0.7
+        max_speed_xy: 0.5
+
         min_speed_theta: 0.0
+        max_speed_theta: 1.5
 
-        acc_lim_x: 2.0
-        acc_lim_y: 2.0
-        acc_lim_theta: 3.0
-
-        decel_lim_x: -2.0
-        decel_lim_y: -2.0
-        decel_lim_theta: -3.0
-
-        vx_samples: 20
-        vy_samples: 20
+        sim_time: 1.5
+        vx_samples: 15
+        vy_samples: 15
         vtheta_samples: 20
 
-        sim_time: 1.5                  # was 0.8 — longer lookahead anticipates corners
-        linear_granularity: 0.05
-        angular_granularity: 0.025
-        transform_tolerance: 0.3
-
-        xy_goal_tolerance: 0.2
-        trans_stopped_velocity: 0.05
-
-        short_circuit_trajectory_evaluation: true
-        stateful: true
-
         critics: [
-          "RotateToGoal",
-          "Oscillation",
+          "ObstacleFootprint",
           "BaseObstacle",
-          "PathAlign",
           "PathDist",
-          "GoalDist",
-          "Twirling"
+          "GoalDist"
         ]
 
-        BaseObstacle.scale: 0.6
-
-        PathAlign.scale: 32.0                  # was 12.0 — stronger heading alignment
-        PathAlign.forward_point_distance: 0.4  # was 0.6 — tighter alignment check
-
-        PathDist.scale: 32.0                   # was 40.0 — less obsessive path-hugging
-
-        GoalAlign.scale: 0.0
-        GoalAlign.forward_point_distance: 0.2
-
-        GoalDist.scale: 24.0                   # was 60.0 — less aggressive goal-pulling
-
-        RotateToGoal.scale: 2.0                # was 1.5
-        RotateToGoal.slowing_factor: 3.0
-        RotateToGoal.lookahead_time: -1.0
-
-        Twirling.scale: 5.0                    # was 10.0
+        BaseObstacle.scale: 20.0
+        ObstacleFootprint.scale: 2.0
+        PathDist.scale: 5.0
+        GoalDist.scale: 8.0
 
 
   local_costmap:
@@ -115,7 +90,7 @@
         height: 3
         resolution: 0.05
 
-        footprint: "[[0.20,0.18],[0.20,-0.18],[-0.20,-0.18],[-0.20,0.18]]"
+        robot_radius: 0.18
         footprint_padding: 0.03
 
         plugins: ["obstacle_layer", "inflation_layer"]
@@ -141,9 +116,8 @@
 
         inflation_layer:
           plugin: "nav2_costmap_2d::InflationLayer"
-
-          inflation_radius: 0.5
-          cost_scaling_factor: 5.0
+          inflation_radius: 0.45
+          cost_scaling_factor: 2.5
 
         always_send_full_costmap: true
 
@@ -188,9 +162,8 @@
 
         inflation_layer:
           plugin: "nav2_costmap_2d::InflationLayer"
-
-          inflation_radius: 0.6
-          cost_scaling_factor: 4.0
+          inflation_radius: 0.45
+          cost_scaling_factor: 3.0
 
         always_send_full_costmap: true
 
@@ -198,20 +171,22 @@
   planner_server:
     ros__parameters:
 
-      expected_planner_frequency: 10.0
+      expected_planner_frequency: 2.0
       planner_plugins: ["GridBased"]
 
       GridBased:
         plugin: "nav2_smac_planner::SmacPlanner2D"
 
-        tolerance: 0.10            # was 0.25 — stricter approach, less corner-cutting near goal
+        tolerance: 0.15
         downsample_costmap: false
         allow_unknown: true
 
         max_iterations: 1000000
-        max_on_approach_iterations: 1000
+        max_on_approach_iterations: 500
 
         smooth_path: true
+
+        use_final_approach_orientation: false
 
 
   behavior_server:
@@ -239,9 +214,9 @@
       transform_timeout: 0.2
       simulate_ahead_time: 2.0
 
-      max_rotational_vel: 1.5
-      min_rotational_vel: 0.4
-      rotational_acc_lim: 3.2
+      max_rotational_vel: 1.0
+      min_rotational_vel: 0.1
+      rotational_acc_lim: 1.0
 
 
   waypoint_follower:
